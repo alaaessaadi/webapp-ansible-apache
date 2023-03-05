@@ -2,8 +2,8 @@
 - name: "Installation Apache avec docker"
   hosts: prod
   become: true
-  vars:
-   ansible_sudo_pass: admin
+  vars_files:
+    - files/secrets/credentials.vault
   pre_tasks:
     - name: "Install prerequist"
       package: name='{{ item }}' state=present
