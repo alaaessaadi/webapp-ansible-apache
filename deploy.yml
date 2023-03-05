@@ -1,0 +1,35 @@
+---
+- name: "Installation Apache avec docker"
+  hosts: prod
+  become: true
+  vars:
+   ansible_sudo_pass: admin
+  pre_tasks:
+    - name: "Install prerequist"
+      package: name='{{ item }}' state=present
+      when: ansible_distribution == 'CentOS'
+      loop:
+      - epel-release
+      - wget
+      - git
+    - name : download pip script
+      ansible.builtin.get_url:
+       url: https://bootstrap.pypa.io/pip/2.7/get-pip.py
+       dest: /tmp/get-pip.py
+    - name: install python-pip
+      command: python2.7 /tmp/get-pip.py
+    - name: "Install docker python"
+      pip: name=docker-py
+  tasks:
+    - name: Template a index.html
+      ansible.builtin.template:
+       src: index.html.j2
+       dest: /home/admin/index.html 
+    - name: "creation apache conteneur"
+      docker_container:
+       name: webapp
+       image: httpd
+       ports:
+        - "80:80"
+       volumes: 
+        - /home/admin/index.html:/usr/local/apache2/htdocs/index.html
